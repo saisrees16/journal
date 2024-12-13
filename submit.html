@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manuscript Submission Confirmation | Journal Hub</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f7ff;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="bg-white p-10 rounded-xl shadow-2xl max-w-xl w-full text-center">
+        <div class="mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 mx-auto text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </div>
+        
+        <h1 class="text-3xl font-bold mb-4 text-gray-800">Manuscript Submitted Successfully!</h1>
+        
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+            <p class="text-blue-700">
+                Your manuscript has been received and is now in our submission queue. 
+                You will receive a confirmation email with further details shortly.
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-gray-100 p-4 rounded">
+                <h3 class="font-semibold mb-2">Manuscript Details</h3>
+                <p id="manuscript-title" class="text-gray-700">Climate Change Impact Study</p>
+            </div>
+            
+            <div class="bg-gray-100 p-4 rounded">
+                <h3 class="font-semibold mb-2">Submission Date</h3>
+                <p id="submission-date" class="text-gray-700"></p>
+            </div>
+        </div>
+        
+        <div class="mt-6">
+            <h3 class="font-semibold mb-2">What happens next?</h3>
+            <ul class="text-left list-disc list-inside text-gray-600 space-y-2">
+                <li>Initial screening of your manuscript</li>
+                <li>Peer review process</li>
+                <li>Editorial decision</li>
+                <li>Notification via email</li>
+            </ul>
+        </div>
+        
+        <div class="mt-8 space-x-4">
+            <a href="#" onclick="window.history.back()" class="bg-blue-500 text-white px-6 py-3 rounded hover:bg-blue-600 transition">
+                Back to Dashboard
+            </a>
+            <a href="#" class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 transition">
+                Track Submission
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Set submission date dynamically
+        document.getElementById('submission-date').textContent = new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        // Optional: Capture manuscript title from previous page
+        document.addEventListener('DOMContentLoaded', function() {
+            const titleInput = window.opener?.document.querySelector('#submission-form input[type="text"]');
+            if (titleInput && titleInput.value) {
+                document.getElementById('manuscript-title').textContent = titleInput.value;
+            }
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+    // Retrieve submission data from sessionStorage
+    const submissionDataString = sessionStorage.getItem('submissionData');
+    
+    if (submissionDataString) {
+        const submissionData = JSON.parse(submissionDataString);
+        
+        // Set manuscript title
+        const titleElement = document.getElementById('manuscript-title');
+        if (titleElement) {
+            titleElement.textContent = submissionData.title || 'Untitled Manuscript';
+        }
+        
+        // Set submission date
+        const dateElement = document.getElementById('submission-date');
+        if (dateElement) {
+            dateElement.textContent = new Date().toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+        
+        // Optional: Log or display additional details
+        console.log('Submission Details:', submissionData);
+        
+        // Clear the stored data
+        sessionStorage.removeItem('submissionData');
+    }
+});
+    </script>
+</body>
+</html>

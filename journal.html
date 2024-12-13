@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Journal Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.ckeditor.com/4.21.0/standard/ckeditor.js"></script>
+    <style>
+        :root {
+            --input-focus: #2d8cf0;
+            --font-color: #323232;
+            --font-color-sub: #666;
+            --bg-color: #fff;
+            --bg-color-alt: #666;
+            --main-color: #323232;
+        }
+        :root {
+            --primary-color: #3B82F6;
+            --secondary-color: #2563EB;
+            --accent-color: #10B981;
+        }
+
+        .modal {
+            background-color: rgba(0,0,0,0.5);
+        }
+        #user-profile {
+            position: relative;
+            cursor: pointer;
+        }
+
+        #profile-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 250px;
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        #profile-dropdown.show {
+            display: block;
+        }
+
+        .dropdown-section {
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .dropdown-section:last-child {
+            border-bottom: none;
+        }
+
+        .manuscript-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            cursor: pointer;
+        }
+
+        .manuscript-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .manuscript-title {
+            font-weight: 600;
+        }
+
+        .manuscript-status {
+            color: #666;
+            font-size: 0.8em;
+        }
+
+        .logout-btn {
+            width: 100%;
+            text-align: left;
+            background: none;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background-color: #f5f5f5;
+        }
+        .wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        .card-switch {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+        }
+
+        .switch {
+            transform: translateY(-200px);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            width: 50px;
+            height: 20px;
+        }
+        
+        .card-side::before {
+            position: absolute;
+            content: 'Log in';
+            left: -70px;
+            top: 0;
+            width: 100px;
+            text-decoration: underline;
+            color: var(--font-color);
+            font-weight: 600;
+        }
+        
+        .card-side::after {
+            position: absolute;
+            content: 'Sign up';
+            left: 70px;
+            top: 0;
+            width: 100px;
+            text-decoration: none;
+            color: var(--font-color);
+            font-weight: 600;
+        }
+        
+        .toggle {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            box-sizing: border-box;
+            border-radius: 5px;
+            border: 2px solid var(--main-color);
+            box-shadow: 4px 4px var(--main-color);
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bg-color);
+            transition: 0.3s;
+        }
+        
+        .slider:before {
+            box-sizing: border-box;
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            border: 2px solid var(--main-color);
+            border-radius: 5px;
+            left: -2px;
+            bottom: 2px;
+            background-color: var(--bg-color);
+            box-shadow: 0 3px 0 var(--main-color);
+            transition: 0.3s;
+        }
+        
+        .toggle:checked + .slider {
+            background-color: var(--input-focus);
+        }
+        
+        .toggle:checked + .slider:before {
+            transform: translateX(30px);
+        }
+        
+        .toggle:checked ~ .card-side:before {
+            text-decoration: none;
+        }
+        
+        .toggle:checked ~ .card-side:after {
+            text-decoration: underline;
+        }
+        
+        .flip-card__inner {
+            width: 300px;
+            height: 400px;
+            position: relative;
+            background-color: transparent;
+            perspective: 1000px;
+            text-align: center;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+        }
+        
+        .toggle:checked ~ .flip-card__inner {
+            transform: rotateY(180deg);
+        }
+        
+        .toggle:checked ~ .flip-card__front {
+            box-shadow: none;
+        }
+        
+        .flip-card__front, .flip-card__back {
+            padding: 20px;
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            background: lightgrey;
+            gap: 20px;
+            border-radius: 5px;
+            border: 2px solid var(--main-color);
+            box-shadow: 4px 4px var(--main-color);
+        }
+        
+        .flip-card__back {
+            width: 100%;
+            transform: rotateY(180deg);
+        }
+        
+        .flip-card__form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .title {
+            margin: 20px 0 20px 0;
+            font-size: 25px;
+            font-weight: 900;
+            text-align: center;
+            color: var(--main-color);
+        }
+        
+        .flip-card__input {
+            width: 250px;
+            height: 40px;
+            border-radius: 5px;
+            border: 2px solid var(--main-color);
+            background-color: var(--bg-color);
+            box-shadow: 4px 4px var(--main-color);
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--font-color);
+            padding: 5px 10px;
+            outline: none;
+        }
+        
+        .flip-card__input::placeholder {
+            color: var(--font-color-sub);
+            opacity: 0.8;
+        }
+        
+        .flip-card__input:focus {
+            border: 2px solid var(--input-focus);
+        }
+        
+        .flip-card__btn {
+            margin: 20px 0 20px 0;
+            width: 120px;
+            height: 40px;
+            border-radius: 5px;
+            border: 2px solid var(--main-color);
+            background-color: var(--bg-color);
+            box-shadow: 4px 4px var(--main-color);
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--font-color);
+            cursor: pointer;
+        }
+        
+        .flip-card__btn:active {
+            box-shadow: 0px 0px var(--main-color);
+            transform: translate(3px, 3px);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-light);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .sidebar {
+            background-color: var(--primary-color);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            padding: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-link {
+            color: white;
+            opacity: 0.8;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-link:hover {
+            opacity: 1;
+            transform: translateX(10px);
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .progress-bar {
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-blue-600">Journal Hub</h1>
+            <div id="auth-buttons" class="hidden">
+                <button id="toggle-auth" class="bg-blue-500 text-white px-4 py-2 rounded">Login/Register</button>
+            </div>
+            <div id="user-profile" class="flex items-center">
+              <img id="profile-pic" src="/api/placeholder/40/40" class="rounded-full mr-2" alt="Profile Picture">
+              <span id="user-name" class="font-medium">John Doe</span>
+              
+              <!-- Dropdown Container -->
+              <div id="profile-dropdown" class="dropdown">
+                  <div class="dropdown-section">
+                      <h3 class="font-semibold text-gray-700 mb-2">My Manuscripts</h3>
+                      <div class="manuscript-item">
+                          <div>
+                              <div class="manuscript-title">Climate Study</div>
+                              <div class="manuscript-status">Under Review</div>
+                          </div>
+                          <span>📄</span>
+                      </div>
+                      <div class="manuscript-item">
+                          <div>
+                              <div class="manuscript-title">AI Research</div>
+                              <div class="manuscript-status">Draft</div>
+                          </div>
+                          <span>📄</span>
+                      </div>
+                  </div>
+                  <div class="dropdown-section">
+                    🚪 <span data-logout-btn>Log Out</span>
+                  </div>
+              </div>
+          </div>
+        </div>
+    </nav>
+  
+    <!-- Authentication Wrapper -->
+    <div id="auth-modal" class="fixed inset-0 z-50 hidden modal flex items-center justify-center bg-black bg-opacity-50">
+      <div class="wrapper">
+          <div class="card-switch">
+              <label class="switch">
+                 <input type="checkbox" class="toggle">
+                 <span class="slider"></span>
+                 <span class="card-side"></span>
+                 <div class="flip-card__inner">
+                    <div class="flip-card__front">
+                       <div class="title">Log in</div>
+                       <form id="login-form" class="flip-card__form">
+                          <input id="login-email" class="flip-card__input" name="email" placeholder="Email" type="email" required>
+                          <input id="login-password" class="flip-card__input" name="password" placeholder="Password" type="password" required>
+                          <button type="submit" class="flip-card__btn">Let's go!</button>
+                       </form>
+                    </div>
+                    <div class="flip-card__back">
+                       <div class="title">Sign up</div>
+                       <form id="register-form" class="flip-card__form">
+                          <input id="register-name" class="flip-card__input" placeholder="Name" type="text" required>
+                          <input id="register-email" class="flip-card__input" name="email" placeholder="Email" type="email" required>
+                          <input id="register-password" class="flip-card__input" name="password" placeholder="Password" type="password" required>
+                          <select id="register-role" class="flip-card__input">
+                              <option value="author">Author</option>
+                              <option value="reviewer">Reviewer</option>
+                              <option value="editor">Editor</option>
+                          </select>
+                          <button type="submit" class="flip-card__btn">Confirm!</button>
+                       </form>
+                    </div>
+                 </div>
+              </label>
+          </div>   
+      </div>
+    </div>
+  
+      <!-- Sidebar Navigation -->
+      <aside class="sidebar">
+          <div class="text-center mb-10">
+              <h1 class="text-2xl font-bold">Journal Hub</h1>
+          </div>
+          <nav>
+              <ul>
+                  <li class="mb-4"><a href="#submit" class="sidebar-link block">Submit Manuscript</a></li>
+                  <li class="mb-4"><a href="#track" class="sidebar-link block">Track Submission</a></li>
+                  <li class="mb-4"><a href="#review" class="sidebar-link block">Review Process</a></li>
+                  <li class="mb-4"><a href="#board" class="sidebar-link block">Editorial Board</a></li>
+                  <li class="mb-4"><a href="#guidelines" class="sidebar-link block">Author Guidelines</a></li>
+                  <li class="mb-4"><a href="#contact" class="sidebar-link block">Contact</a></li>
+              </ul>
+          </nav>
+      </aside>
+  
+      <!-- Main Content Area -->
+      <main class="main-content">
+          <!-- Submission Section -->
+          <section id="submit" class="mb-12">
+              <div class="card p-8">
+                  <h2 class="text-3xl font-bold mb-6 text-gray-800">Submit Your Manuscript</h2>
+                  <form id="submission-form">
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div>
+                              <label class="block mb-2">Manuscript Title</label>
+                              <input type="text" required class="w-full p-3 border rounded-lg" placeholder="Enter manuscript title">
+                          </div>
+                          <div>
+                              <label class="block mb-2">Manuscript Category</label>
+                              <select class="w-full p-3 border rounded-lg">
+                                  <option>Research Article</option>
+                                  <option>Review Paper</option>
+                                  <option>Case Study</option>
+                                  <option>Short Communication</option>
+                              </select>
+                          </div>
+                      </div>
+  
+                      <div class="mt-6">
+                          <label class="block mb-2">Abstract</label>
+                          <textarea id="abstract" class="w-full p-3 border rounded-lg" rows="5" placeholder="Enter your abstract"></textarea>
+                      </div>
+  
+                      <div id="authors-container" class="mt-6">
+                          <div class="flex items-center mb-4">
+                              <h3 class="text-xl mr-4">Authors</h3>
+                              <button type="button" id="add-author" class="bg-blue-500 text-white px-3 py-1 rounded">+ Add Author</button>
+                          </div>
+                          <div id="authors">
+                              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 author-row">
+                                  <input type="text" placeholder="First Name" class="p-2 border rounded">
+                                  <input type="text" placeholder="Last Name" class="p-2 border rounded">
+                                  <input type="email" placeholder="Email" class="p-2 border rounded">
+                              </div>
+                          </div>
+                      </div>
+  
+                      <div class="mt-6">
+                          <label class="block mb-2">Upload Manuscript</label>
+                          <input type="file" class="w-full p-3 border rounded-lg">
+                      </div>
+  
+                      <button type="submit" class="mt-6 w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition">Submit Manuscript</button>
+                  </form>
+              </div>
+          </section>
+  
+          <!-- Submission Tracking Section -->
+          <section id="track" class="mb-12">
+              <div class="card p-8">
+                  <h2 class="text-3xl font-bold mb-6">Submission Tracking</h2>
+                  <div class="bg-blue-50 p-4 rounded-lg">
+                      <div class="flex justify-between mb-2">
+                          <span>Initial Screening</span>
+                          <span class="text-green-600">Completed</span>
+                      </div>
+                      <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                          <div class="bg-green-500 h-2.5 rounded-full" style="width: 30%"></div>
+                      </div>
+                      <div class="flex justify-between mb-2">
+                          <span>Peer Review</span>
+                          <span class="text-blue-600">In Progress</span>
+                      </div>
+                      <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                          <div class="bg-blue-500 h-2.5 rounded-full" style="width: 60%"></div>
+                      </div>
+                  </div>
+              </div>
+          </section>
+  
+          <!-- Editorial Board Section -->
+          <section id="board" class="mb-12">
+              <div class="card p-8">
+                  <h2 class="text-3xl font-bold mb-6">Editorial Board</h2>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div class="text-center">
+                          <img src="/api/placeholder/200/200" alt="Editor" class="mx-auto mb-4 rounded-full">
+                          <h3 class="font-bold">Dr. Emily Richardson</h3>
+                          <p class="text-gray-600">Editor-in-Chief</p>
+                      </div>
+                      <div class="text-center">
+                          <img src="/api/placeholder/200/200" alt="Editor" class="mx-auto mb-4 rounded-full">
+                          <h3 class="font-bold">Prof. Michael Chen</h3>
+                          <p class="text-gray-600">Managing Editor</p>
+                      </div>
+                      <div class="text-center">
+                          <img src="/api/placeholder/200/200" alt="Editor" class="mx-auto mb-4 rounded-full">
+                          <h3 class="font-bold">Dr. Sarah Thompson</h3>
+                          <p class="text-gray-600">Senior Editor</p>
+                      </div>
+                  </div>
+              </div>
+          </section>
+          <!-- Author Guidelines Section -->
+<section id="guidelines" class="mb-12">
+    <div class="card p-8">
+        <h2 class="text-3xl font-bold mb-6 text-gray-800">Author Guidelines</h2>
+        
+        <div class="space-y-8">
+            <div>
+                <h3 class="text-2xl font-semibold mb-4 text-blue-700">1. Manuscript Preparation</h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-bold mb-2">General Requirements</h4>
+                        <ul class="list-disc list-inside space-y-2">
+                            <li>Manuscripts must be original, unpublished work</li>
+                            <li>Write in clear, concise English</li>
+                            <li>Use standard academic formatting</li>
+                            <li>Avoid jargon and overly complex language</li>
+                            <li>Aim for clarity and precision</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold mb-2">Manuscript Structure</h4>
+                        <ul class="list-disc list-inside space-y-2">
+                            <li>Title Page</li>
+                            <li>Abstract</li>
+                            <li>Introduction</li>
+                            <li>Methods</li>
+                            <li>Results</li>
+                            <li>Discussion</li>
+                            <li>Conclusion</li>
+                            <li>References</li>
+                            <li>Acknowledgments (optional)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-2xl font-semibold mb-4 text-blue-700">2. Formatting Specifications</h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-bold mb-2">Document Formatting</h4>
+                        <ul class="list-disc list-inside space-y-2">
+                            <li>Font: Times New Roman or Arial</li>
+                            <li>Font Size: 12 point</li>
+                            <li>Line Spacing: Double</li>
+                            <li>Margins: 1 inch (2.54 cm) on all sides</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold mb-2">Recommended Manuscript Lengths</h4>
+                        <ul class="list-disc list-inside space-y-2">
+                            <li>Research Articles: 4000-6000 words</li>
+                            <li>Review Papers: 5000-7000 words</li>
+                            <li>Case Studies: 3000-4500 words</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-2xl font-semibold mb-4 text-blue-700">3. Submission Guidelines</h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-bold mb-2">Manuscript Submission</h4>
+                        <ul class="list-disc list-inside space-y-2">
+                            <li>Submit through online submission system</li>
+                            <li>Provide a cover letter</li>
+                            <li>Include declaration of no conflict of interest</li>
+                            <li>Ensure all authors approve submission</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold mb-2">Ethical Considerations</h4>
+                        <ul class="list-disc list-inside space-y-2">
+                            <li>Obtain ethical approvals for research</li>
+                            <li>Disclose funding sources</li>
+                            <li>Report potential conflicts of interest</li>
+                            <li>Adhere to research integrity principles</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-blue-50 p-6 rounded-lg">
+                <h3 class="text-xl font-bold mb-4 text-blue-800">Need Help?</h3>
+                <div class="flex items-center space-x-4">
+                    <div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="font-semibold">Contact Guidelines Support</p>
+                        <p class="text-gray-600">Email: guidelines@journalhub.org</p>
+                        <p class="text-gray-600">Phone: +1 (555) 123-4567</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+          <!-- Contact Section -->
+<section id="contact" class="mb-12">
+    <div class="card p-8">
+        <h2 class="text-3xl font-bold mb-6 text-gray-800">Contact Us</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Contact Information -->
+            <div>
+                <h3 class="text-xl font-semibold mb-4">Journal Hub Information</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        <span>contact@journalhub.org</span>
+                    </div>
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                        <span>+1 (555) 123-4567</span>
+                    </div>
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span>Academic Research Center, Suite 500, Science Park</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Form -->
+            <div>
+                <h3 class="text-xl font-semibold mb-4">Send Us a Message</h3>
+                <form id="contact-form">
+                    <div class="space-y-4">
+                        <input type="text" placeholder="Your Name" required class="w-full p-3 border rounded-lg focus:border-blue-500 focus:ring focus:ring-blue-200 transition">
+                        <input type="email" placeholder="Your Email" required class="w-full p-3 border rounded-lg focus:border-blue-500 focus:ring focus:ring-blue-200 transition">
+                        <select class="w-full p-3 border rounded-lg focus:border-blue-500 focus:ring focus:ring-blue-200 transition">
+                            <option value="">Select Inquiry Type</option>
+                            <option value="submission">Manuscript Submission</option>
+                            <option value="review">Review Process</option>
+                            <option value="general">General Inquiry</option>
+                            <option value="technical">Technical Support</option>
+                        </select>
+                        <textarea placeholder="Your Message" rows="5" required class="w-full p-3 border rounded-lg focus:border-blue-500 focus:ring focus:ring-blue-200 transition"></textarea>
+                        <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition">Send Message</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+      </main>
+
+    <script>
+        // Submission Tracking Module
+class SubmissionTracker {
+    constructor() {
+        this.submissions = JSON.parse(localStorage.getItem('submissions') || '[]');
+        this.initTrackingSection();
+    }
+
+    initTrackingSection() {
+        const trackSection = document.getElementById('track');
+        if (!trackSection) return;
+
+        if (this.submissions.length === 0) {
+            this.renderNoSubmissions(trackSection);
+        } else {
+            this.renderSubmissionProgress(trackSection);
+        }
+    }
+
+    renderNoSubmissions(trackSection) {
+        trackSection.innerHTML = `
+            <div class="card p-8">
+                <h2 class="text-3xl font-bold mb-6">Submission Tracking</h2>
+                <div class="bg-blue-50 p-6 rounded-lg text-center">
+                    <p class="text-gray-700 mb-4">You have no active submissions.</p>
+                    <a href="#submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+                        Submit a Manuscript
+                    </a>
+                </div>
+            </div>
+        `;
+    }
+
+    renderSubmissionProgress(trackSection) {
+        // Generate HTML for the most recent submission
+        const latestSubmission = this.submissions[this.submissions.length - 1];
+        
+        const statusStages = [
+            { 
+                name: 'Initial Screening', 
+                status: latestSubmission.initialScreening || 'Pending',
+                progress: latestSubmission.initialScreeningProgress || 30
+            },
+            { 
+                name: 'Peer Review', 
+                status: latestSubmission.peerReview || 'Pending',
+                progress: latestSubmission.peerReviewProgress || 60
+            },
+            { 
+                name: 'Final Decision', 
+                status: latestSubmission.finalDecision || 'Pending',
+                progress: latestSubmission.finalDecisionProgress || 0
+            }
+        ];
+
+        const stagesHTML = statusStages.map(stage => `
+            <div class="mb-4">
+                <div class="flex justify-between mb-2">
+                    <span>${stage.name}</span>
+                    <span class="${this.getStatusColor(stage.status)}">${stage.status}</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                    <div class="bg-blue-500 h-2.5 rounded-full" style="width: ${stage.progress}%"></div>
+                </div>
+            </div>
+        `).join('');
+
+        trackSection.innerHTML = `
+            <div class="card p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold">Submission Tracking</h2>
+                    <span class="text-gray-600">Manuscript: ${latestSubmission.title}</span>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    ${stagesHTML}
+                    <div class="mt-6 text-sm text-gray-600">
+                        <strong>Submitted:</strong> ${new Date(latestSubmission.submissionDate).toLocaleDateString()}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    getStatusColor(status) {
+        switch(status) {
+            case 'Completed': return 'text-green-600';
+            case 'In Progress': return 'text-blue-600';
+            case 'Pending': return 'text-gray-600';
+            default: return 'text-gray-600';
+        }
+    }
+
+    // Method to add a new submission
+    addSubmission(submissionData) {
+        const submission = {
+            ...submissionData,
+            id: Date.now(),
+            submissionDate: new Date().toISOString(),
+            initialScreening: 'Pending',
+            initialScreeningProgress: 30,
+            peerReview: 'Pending',
+            peerReviewProgress: 0,
+            finalDecision: 'Pending',
+            finalDecisionProgress: 0
+        };
+
+        this.submissions.push(submission);
+        localStorage.setItem('submissions', JSON.stringify(this.submissions));
+        this.initTrackingSection();
+    }
+
+    // Method to simulate progress updates (for demonstration)
+    simulateSubmissionProgress() {
+        if (this.submissions.length > 0) {
+            const latestSubmission = this.submissions[this.submissions.length - 1];
+            
+            // Simulate progress updates
+            if (latestSubmission.initialScreening === 'Pending') {
+                latestSubmission.initialScreening = 'Completed';
+                latestSubmission.initialScreeningProgress = 100;
+                latestSubmission.peerReview = 'In Progress';
+                latestSubmission.peerReviewProgress = 60;
+            } else if (latestSubmission.peerReview === 'In Progress') {
+                latestSubmission.peerReview = 'Completed';
+                latestSubmission.peerReviewProgress = 100;
+                latestSubmission.finalDecision = 'In Progress';
+                latestSubmission.finalDecisionProgress = 50;
+            }
+
+            localStorage.setItem('submissions', JSON.stringify(this.submissions));
+            this.initTrackingSection();
+        }
+    }
+}
+
+// Initialize Submission Tracker
+document.addEventListener('DOMContentLoaded', function() {
+    const submissionTracker = new SubmissionTracker();
+
+    // Hook into submission form to add new submissions
+    const submissionForm = document.getElementById('submission-form');
+    if (submissionForm) {
+        submissionForm.addEventListener('submit', function(e) {
+            const titleInput = this.querySelector('input[type="text"]');
+            const categorySelect = this.querySelector('select');
+            
+            const submissionData = {
+                title: titleInput.value,
+                category: categorySelect.value
+            };
+
+            submissionTracker.addSubmission(submissionData);
+        });
+    }
+
+    // Optional: Add a button to simulate progress updates for demonstration
+    const progressUpdateBtn = document.createElement('button');
+    progressUpdateBtn.textContent = 'Simulate Progress Update';
+    progressUpdateBtn.className = 'bg-green-500 text-white px-4 py-2 rounded mt-4 hidden';
+    progressUpdateBtn.addEventListener('click', () => submissionTracker.simulateSubmissionProgress());
+    
+    const trackSection = document.getElementById('track');
+    if (trackSection) {
+        trackSection.appendChild(progressUpdateBtn);
+    }
+});
+        document.addEventListener('DOMContentLoaded', function () {
+    // CKEditor initialization with configuration
+    const abstractEditor = CKEDITOR.replace('abstract', {
+        // Optional configuration to ensure content is captured
+        on: {
+            instanceReady: function(evt) {
+                evt.editor.setData('');
+            }
+        }
+    });
+
+    // Add author functionality
+    document.getElementById('add-author').addEventListener('click', function () {
+        const authorsContainer = document.getElementById('authors');
+        const newAuthorRow = document.createElement('div');
+        newAuthorRow.className = 'grid grid-cols-1 md:grid-cols-3 gap-4 author-row mt-4';
+        newAuthorRow.innerHTML = `
+            <input type="text" placeholder="First Name" class="p-2 border rounded">
+            <input type="text" placeholder="Last Name" class="p-2 border rounded">
+            <input type="email" placeholder="Email" class="p-2 border rounded">
+        `;
+        authorsContainer.appendChild(newAuthorRow);
+    });
+
+    // Submission form handling
+    const submissionForm = document.getElementById('submission-form');
+    submissionForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Collect form data
+        const formData = {
+            title: this.querySelector('input[type="text"]').value,
+            category: this.querySelector('select').value,
+            abstract: abstractEditor.getData(), // Correctly get CKEditor content
+            authors: Array.from(document.querySelectorAll('#authors .author-row')).map(row => ({
+                firstName: row.querySelector('input:nth-child(1)').value,
+                lastName: row.querySelector('input:nth-child(2)').value,
+                email: row.querySelector('input:nth-child(3)').value
+            }))
+        };
+
+        // Validate form data
+        if (!formData.title || !formData.abstract) {
+            alert('Please fill in all required fields');
+            return;
+        }
+
+        // Store submission data in sessionStorage
+        sessionStorage.setItem('submissionData', JSON.stringify(formData));
+
+        // Navigate to confirmation page in the same tab
+        window.location.href = 'submit.html';
+    });
+});
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add author functionality
+            document.getElementById('add-author').addEventListener('click', function() {
+                const authorsContainer = document.getElementById('authors');
+                const newAuthorRow = document.createElement('div');
+                newAuthorRow.className = 'grid grid-cols-1 md:grid-cols-3 gap-4 author-row mt-4';
+                newAuthorRow.innerHTML = `
+                    <input type="text" placeholder="First Name" class="p-2 border rounded">
+                    <input type="text" placeholder="Last Name" class="p-2 border rounded">
+                    <input type="email" placeholder="Email" class="p-2 border rounded">
+                `;
+                authorsContainer.appendChild(newAuthorRow);
+            });
+
+            // CKEditor for abstract
+            CKEDITOR.replace('abstract');
+
+            class AuthManager {
+                constructor() {
+                    this.users = JSON.parse(localStorage.getItem('users') || '[]');
+                    this.currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                    this.setupEventListeners();
+                    this.updateUIBasedOnAuthState();
+                }
+
+                setupEventListeners() {
+                    // Toggle Authentication Modal
+                    const toggleAuthBtn = document.getElementById('toggle-auth');
+                    if (toggleAuthBtn) {
+                        toggleAuthBtn.addEventListener('click', () => this.showAuthModal());
+                    }
+                    
+                    // Form Submissions
+                    const loginForm = document.getElementById('login-form');
+                    const registerForm = document.getElementById('register-form');
+                    
+                    if (loginForm) {
+                        loginForm.addEventListener('submit', (e) => this.handleLogin(e));
+                    }
+                    
+                    if (registerForm) {
+                        registerForm.addEventListener('submit', (e) => this.handleRegistration(e));
+                    }
+
+                    // Logout Buttons
+                    const dropdownLogoutBtn = document.querySelector('[data-logout-btn]');
+
+                    if (dropdownLogoutBtn) {
+                        dropdownLogoutBtn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            this.logout();
+                        });
+                    }
+
+                    // Modal Close Functionality
+                    const authModal = document.getElementById('auth-modal');
+                    if (authModal) {
+                        authModal.addEventListener('click', (e) => {
+                            if (e.target === e.currentTarget) {
+                                e.currentTarget.classList.add('hidden');
+                            }
+                        });
+                    }
+                }
+
+                showAuthModal() {
+                    const authModal = document.getElementById('auth-modal');
+                    if (authModal) {
+                        authModal.classList.remove('hidden');
+                    }
+                }
+
+                handleLogin(e) {
+                    e.preventDefault();
+                    const emailInput = document.getElementById('login-email');
+                    const passwordInput = document.getElementById('login-password');
+
+                    if (!emailInput || !passwordInput) return;
+
+                    const email = emailInput.value;
+                    const password = passwordInput.value;
+
+                    const user = this.users.find(u => u.email === email && u.password === password);
+
+                    if (user) {
+                        this.currentUser = user;
+                        localStorage.setItem('currentUser', JSON.stringify(user));
+                        this.updateUIBasedOnAuthState();
+                        
+                        const authModal = document.getElementById('auth-modal');
+                        if (authModal) {
+                            authModal.classList.add('hidden');
+                        }
+                        
+                        alert('Login successful!');
+                    } else {
+                        alert('Invalid email or password');
+                    }
+                }
+
+                handleRegistration(e) {
+                    e.preventDefault();
+                    const nameInput = document.getElementById('register-name');
+                    const emailInput = document.getElementById('register-email');
+                    const passwordInput = document.getElementById('register-password');
+                    const roleSelect = document.getElementById('register-role');
+
+                    if (!nameInput || !emailInput || !passwordInput || !roleSelect) return;
+
+                    const name = nameInput.value;
+                    const email = emailInput.value;
+                    const password = passwordInput.value;
+                    const role = roleSelect.value;
+
+                    // Check if user already exists
+                    if (this.users.some(u => u.email === email)) {
+                        alert('User with this email already exists');
+                        return;
+                    }
+
+                    // Create new user
+                    const newUser = { 
+                        id: Date.now(), 
+                        name, 
+                        email, 
+                        password, 
+                        role 
+                    };
+
+                    this.users.push(newUser);
+                    localStorage.setItem('users', JSON.stringify(this.users));
+
+                    this.currentUser = newUser;
+                    localStorage.setItem('currentUser', JSON.stringify(newUser));
+
+                    this.updateUIBasedOnAuthState();
+                    
+                    const authModal = document.getElementById('auth-modal');
+                    if (authModal) {
+                        authModal.classList.add('hidden');
+                    }
+                    
+                    alert('Registration successful!');
+                }
+
+                logout() {
+                    // Clear current user
+                    this.currentUser = null;
+                    
+                    // Remove current user from local storage
+                    localStorage.removeItem('currentUser');
+                    
+                    // Update UI to reflect logged-out state
+                    this.updateUIBasedOnAuthState();
+                    
+                    alert('You have been logged out successfully.');
+                }
+
+                updateUIBasedOnAuthState() {
+                    const authButtons = document.getElementById('auth-buttons');
+                    const userProfile = document.getElementById('user-profile');
+                    const userName = document.getElementById('user-name');
+                    const profileDropdown = document.getElementById('profile-dropdown');
+
+                    if (this.currentUser) {
+                        // Logged in state
+                        if (authButtons) authButtons.classList.add('hidden');
+                        if (userProfile) userProfile.classList.remove('hidden');
+                        if (userName) userName.textContent = this.currentUser.name || 'User';
+                        if (profileDropdown) profileDropdown.classList.remove('show');
+                    } else {
+                        // Logged out state
+                        if (authButtons) authButtons.classList.remove('hidden');
+                        if (userProfile) userProfile.classList.add('hidden');
+                    }
+                }
+            }
+
+            // Initialize Authentication
+            new AuthManager();
+
+            // Dropdown menu toggle
+            const userProfile = document.getElementById('user-profile');
+            const profileDropdown = document.getElementById('profile-dropdown');
+
+            if (userProfile && profileDropdown) {
+                userProfile.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                    profileDropdown.classList.toggle('show');
+                });
+
+                document.addEventListener('click', function() {
+                    profileDropdown.classList.remove('show');
+                });
+
+                profileDropdown.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                });
+            }
+        });
+    </script>
+</body>
+</html>
